@@ -1,5 +1,6 @@
 const { program } = require("commander");
-const contacts = require("./contacts");
+const file = require("./contacts");
+
 
 program
   .option("-a, --action <type>", "choose action")
@@ -9,22 +10,27 @@ program
   .option("-p, --phone <type>", "user phone");
 
 const invokeAction = async ({ action, id, name, email, phone }) => {
-  switch (action) {
-    case "list":
-      const allContacts = await contacts.listContacts();
-      return console.table(allContacts);
-    case "get":
-      const contactById = await contacts.getContactById(id);
-      return console.log(contactById);
-    case "add":
-      const newContact = await contacts.addContact({ name, email, phone });
-      return console.log(newContact);
-    case "remove":
-      const deleteContact = await contacts.removeContact(id);
-      return console.log(deleteContact);
-    default:
-      console.warn("\x1B[31m Unknown action type!");
+  try {
+     switch (action) {
+       case "list":
+         const allContacts = await file.listContacts();
+         return console.table(allContacts);
+       case "get":
+         const contactById = await file.getContactById(id);
+         return console.log(contactById);
+       case "add":
+         const newContact = await file.addContact({ name, email, phone });
+         return console.log(newContact);
+       case "remove":
+         const deleteContact = await file.removeContact(id);
+         return console.log(deleteContact);
+       default:
+         console.warn("\x1B[31m Unknown action type!");
+     }
+  } catch (error) {
+    console.log(error.message);
   }
+ 
 };
 
 program.parse(process.argv);
