@@ -4,29 +4,25 @@ const { nanoid } = require("nanoid");
 
 const contactsPath = path.join(__dirname, "db", "contacts.json");
 
-const listContacts = async () => {
-  try {
-    const data = await fs.readFile(contactsPath);
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Помилка у завантаженні списку контактів: ", error);
+class ContactsOperations {
+  constructor(path) {
+    this.path = path;
   }
-};
 
-const getContactById = async (contactId) => {
-  try {
+  listContacts = async () => {
+    const data = await fs.readFile(this.path);
+    return JSON.parse(data);
+  };
+
+  getContactById = async (contactId) => {
     const id = String(contactId);
-    const contacts = await listContacts();
+    const contacts = await this.listContacts();
     const result = contacts.find((contact) => contact.id === id);
     return result || null;
-  } catch (error) {
-    console.error("Помилка у зверненні до контакту: ", error);
-  }
-};
+  };
 
-const addContact = async (data) => {
-  try {
-    const contacts = await listContacts();
+  addContact = async (data) => {
+    const contacts = await this.listContacts();
     const newContact = {
       id: nanoid(),
       ...data,
@@ -34,15 +30,11 @@ const addContact = async (data) => {
     contacts.push(newContact);
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return newContact;
-  } catch (error) {
-    console.error("Помилка у додаванні контакту: ", error);
-  }
-};
+  };
 
-const removeContact = async (contactId) => {
-  try {
+  removeContact = async (contactId) => {
     const id = String(contactId);
-    const contacts = await listContacts();
+    const contacts = await this.listContacts();
     const index = contacts.findIndex((contact) => contact.id === id);
     if (index === -1) {
       return null;
@@ -50,14 +42,14 @@ const removeContact = async (contactId) => {
     const [result] = contacts.splice(index, 1);
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return result;
-  } catch (error) {
-    console.error("Помилка у видаленні контакту: ", error);
-  }
-};
+  };
+}
+
+const file = new ContactsOperations(contactsPath);
 
 module.exports = {
-  listContacts,
-  getContactById,
-  addContact,
-  removeContact,
+  listContacts: file.listContacts.bind(file),
+  getContactById: file.getContactById.bind(file),
+  addContact: file.addContact.bind(file),
+  removeContact: file.removeContact.bind(file),
 };
